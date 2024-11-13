@@ -1,0 +1,29 @@
+version: '3'
+
+tasks:
+  format:
+    sources:
+      - apps/yap/src/*.erl
+    cmds:
+      - rebar3 fmt "apps/yap/src/*.erl"
+  build:
+    sources:
+      - apps/yap/src/*.erl
+    deps:
+      [format]
+    cmds:
+      - rebar3 compile
+  test:
+    deps:
+      [build]
+    silent: true
+    cmds:
+      - for: ['lexer']
+        cmd: echo "Testing {{ .ITEM }} module..."; erl -pa _build/default/lib/yap/ebin/ -eval '{{ .ITEM }}:test(), halt().' -noshell 
+  run-*:
+    deps:
+      [build]
+    vars:
+      TARGET: '{{index .MATCH 0}}'
+    cmds:
+      - escript _build/default/lib/yap/ebin/{{.TARGET}}.beam {{.CLI_ARGS}}
