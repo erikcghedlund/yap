@@ -1,4 +1,5 @@
 -module(lexer).
+-include_lib("eunit/include/eunit.hrl").
 -export([parse/1, main/1]).
 
 -record(token, {type :: atom(), val :: any(), line :: integer()}).
