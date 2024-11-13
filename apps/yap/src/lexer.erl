@@ -51,26 +51,13 @@ parse([C|T], Line) when ?IS_CHAR(C) -> {Ident, Tail} = lists:splitwith(fun(X) ->
     end;
 parse([], _) -> [].
 
-pretty_parse(Str) -> pretty_parse_help(parse(Str)).
-
-pretty_parse_help([#token{type=Type1, val=Val1, line=Line1}, #token{type=Type2, val=Val2, line=Line2} | T]) when Line1 == (Line2) -> [#token{type=Type1, val=Val1, line=Line1}, "\n", #token{type=Type2, val=Val2, line=Line2} | pretty_parse_help(T)];
-pretty_parse_help([H | T]) -> [H | pretty_parse_help(T)];
-pretty_parse_help([]) -> [].
-
-parse_file(Filename, raw) ->
+parse_file(Filename) ->
     case file:read_file(Filename) of
         {ok, Content} -> parse(binary_to_list(Content));
         {error, Reason} -> {error, Reason}
-    end;
-parse_file(Filename, pretty) ->
-    case file:read_file(Filename) of
-        {ok, Content} -> pretty_parse(binary_to_list(Content));
-        {error, Reason} -> {error, Reason}
     end.
 
-parse_file(Filename) -> parse_file(Filename, raw).
-
 main(_Args) ->
-        Ans = lists:map(fun (File) -> parse_file(File, pretty) end, _Args),
+        Ans = lists:map(fun (File) -> parse_file(File) end, _Args),
         lists:foreach(fun (X) -> lists:foreach(fun (E) ->  io:write(E) end, X) end, Ans),
         halt().
