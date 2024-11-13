@@ -25,51 +25,52 @@ parse([$;|T], Line) -> [#token{type=separator, val=semicolonsym, line=Line} | pa
 parse([$.|T], Line) -> [#token{type=separator, val=periodsym, line=Line} | parse(T, Line)];
 parse([$(|T], Line) -> [#token{type=separator, val=lparentsym, line=Line} | parse(T, Line)];
 parse([$)|T], Line) -> [#token{type=separator, val=rparentsym, line=Line} | parse(T, Line)];
-% Keywords
-% call
-parse([$ , $c, $a, $l, $l, $ |T], Line) -> [#token{type=keyword, val=callsym, line=Line} | parse(T, Line)];
-% begin
-parse([$ , $b, $e, $g, $i, $n, $ |T], Line) -> [#token{type=keyword, val=beginsym, line=Line} | parse(T, Line)];
-% do
-parse([$ , $d, $o, $ |T], Line) -> [#token{type=keyword, val=dosym, line=Line} | parse(T, Line)];
-% while
-parse([$ , $w, $h, $i, $l, $e, $ |T], Line) -> [#token{type=keyword, val=whilesym, line=Line} | parse(T, Line)];
-% read
-parse([$ , $r, $e, $a, $d, $ |T], Line) -> [#token{type=keyword, val=readsym, line=Line} | parse(T, Line)];
-% write
-parse([$ , $w, $r, $i, $t, $e, $ |T], Line) -> [#token{type=keyword, val=writesym, line=Line} | parse(T, Line)];
-% if
-parse([$ , $i, $f, $ |T], Line) -> [#token{type=keyword, val=ifsym, line=Line} | parse(T, Line)];
-% end
-parse([$ , $e, $n, $d, $ |T], Line) -> [#token{type=keyword, val=endsym, line=Line} | parse(T, Line)];
-% procedue
-parse([$ , $p, $r, $o, $c, $e, $d, $u, $r, $e, $ |T], Line) -> [#token{type=keyword, val=procsym, line=Line} | parse(T, Line)];
-% out
-parse([$ , $o, $u, $t, $ |T], Line) -> [#token{type=keyword, val=outsym, line=Line} | parse(T, Line)];
-% in
-parse([$ , $i, $n, $ |T], Line) -> [#token{type=keyword, val=insym, line=Line} | parse(T, Line)];
-% else
-parse([$ , $e, $l, $s, $e, $ |T], Line) -> [#token{type=keyword, val=elsesym, line=Line} | parse(T, Line)];
-% int
-parse([$ , $i, $n, $t, $ |T], Line) -> [#token{type=keyword, val=intsym, line=Line} | parse(T, Line)];
-% const
-parse([$ , $c, $o, $n, $s, $t, $ |T], Line) -> [#token{type=keyword, val=constsym, line=Line} | parse(T, Line)];
-% odd
-parse([$ , $o, $d, $d, $ |T], Line) -> [#token{type=keyword, val=oddsym, line=Line} | parse(T, Line)];
-
 parse([$ |T], Line) -> parse(T, Line);
 parse([$\t|T], Line) -> parse(T, Line);
 parse([$\n|T], Line) -> parse(T, Line + 1);
-parse([C|T], Line) when ?IS_DIGIT(C) -> {Number, Tail} = lists:splitwith(fun(X) -> ?IS_DIGIT(X) end, [C|T]), [#token{type=number, val=string:to_integer(Number), line=Line} | parse(Tail, Line)];
-parse([C|T], Line) when ?IS_CHAR(C) -> {Ident, Tail} = lists:splitwith(fun(X) -> ?IS_DIGIT(X) or ?IS_CHAR(X) end, [C|T]), [#token{type=ident, val=Ident, line=Line} | parse(Tail, Line)];
+parse([C|T], Line) when ?IS_DIGIT(C) -> {Number, Tail} = lists:splitwith(fun(X) -> ?IS_DIGIT(X) end, [C|T]), {Value, _} = string:to_integer(Number), [#token{type=number, val=Value, line=Line} | parse(Tail, Line)];
+parse([C|T], Line) when ?IS_CHAR(C) -> {Ident, Tail} = lists:splitwith(fun(X) -> ?IS_DIGIT(X) or ?IS_CHAR(X) end, [C|T]),
+    case Ident of
+        "call" -> [#token{type=keyword, val=callsym, line=Line} | parse(Tail, Line)];
+        "begin" -> [#token{type=keyword, val=beginsym, line=Line} | parse(Tail, Line)];
+        "read" -> [#token{type=keyword, val=readsym, line=Line} | parse(Tail, Line)];
+        "do" -> [#token{type=keyword, val=do, line=Line} | parse(Tail, Line)];
+        "while" -> [#token{type=keyword, val=whilesym, line=Line} | parse(Tail, Line)];
+        "write" -> [#token{type=keyword, val=writesym, line=Line} | parse(Tail, Line)];
+        "if" -> [#token{type=keyword, val=ifsym, line=Line} | parse(Tail, Line)];
+        "else" -> [#token{type=keyword, val=elsesym, line=Line} | parse(Tail, Line)];
+        "end" -> [#token{type=keyword, val=endsym, line=Line} | parse(Tail, Line)];
+        "odd" -> [#token{type=keyword, val=oddsym, line=Line} | parse(Tail, Line)];
+        "then" -> [#token{type=keyword, val=thensym, line=Line} | parse(Tail, Line)];
+        "const" -> [#token{type=keyword, val=constsym, line=Line} | parse(Tail, Line)];
+        "int" -> [#token{type=keyword, val=intsym, line=Line} | parse(Tail, Line)];
+        "procedure" -> [#token{type=keyword, val=procsym, line=Line} | parse(Tail, Line)];
+        "out" -> [#token{type=keyword, val=outsym, line=Line} | parse(Tail, Line)];
+        "in" -> [#token{type=keyword, val=insym, line=Line} | parse(Tail, Line)];
+        _ ->  [#token{type=ident, val=Ident, line=Line} | parse(Tail, Line)]
+    end;
 parse([], _) -> [].
 
-white_space_hack([$\n|T]) -> [$ , $\n, $ |white_space_hack(T)];
-white_space_hack([$\t|T]) -> [$ , $\t, $ |white_space_hack(T)];
-white_space_hack([H|T]) -> [H|white_space_hack(T)];
-white_space_hack([]) -> [].
+pretty_parse(Str) -> pretty_parse_help(parse(Str)).
 
-main(_Args) ->  
-        io:write(parse(white_space_hack([32| lists:nth(1,  _Args)]))),
+pretty_parse_help([#token{type=Type1, val=Val1, line=Line1}, #token{type=Type2, val=Val2, line=Line2} | T]) when Line1 == (Line2) -> [#token{type=Type1, val=Val1, line=Line1}, "\n", #token{type=Type2, val=Val2, line=Line2} | pretty_parse_help(T)];
+pretty_parse_help([H | T]) -> [H | pretty_parse_help(T)];
+pretty_parse_help([]) -> [].
+
+parse_file(Filename, raw) ->
+    case file:read_file(Filename) of
+        {ok, Content} -> parse(binary_to_list(Content));
+        {error, Reason} -> {error, Reason}
+    end;
+parse_file(Filename, pretty) ->
+    case file:read_file(Filename) of
+        {ok, Content} -> pretty_parse(binary_to_list(Content));
+        {error, Reason} -> {error, Reason}
+    end.
+
+parse_file(Filename) -> parse_file(Filename, raw).
+
+main(_Args) ->
+        Ans = lists:map(fun (File) -> parse_file(File, pretty) end, _Args),
+        lists:foreach(fun (X) -> lists:foreach(fun (E) ->  io:write(E) end, X) end, Ans),
         halt().
-
