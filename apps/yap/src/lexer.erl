@@ -31,7 +31,7 @@ parse([$< | T], Line) ->
 parse([$> | T], Line) ->
     [#token{type = relop, val = gtrsym, line = Line} | parse(T, Line)];
 parse([$= | T], Line) ->
-    [#token{type = relop, val = equal, line = Line} | parse(T, Line)];
+    [#token{type = relop, val = equalsym, line = Line} | parse(T, Line)];
 parse([$, | T], Line) ->
     [#token{type = separator, val = commasym, line = Line} | parse(T, Line)];
 parse([$; | T], Line) ->
