@@ -4,6 +4,7 @@
 
 construct(term, [{token, Type, Val, Line}]) when (Type == number) or (Type == ident) ->
     {term, construct(factor, [{token, Type, Val, Line}])};
+% TODO: This case might be redundant (or not), hmm...
 construct(term, [L, {token, binop, Sym, _}, R]) when (Sym == multsym) or (Sym == slashsym) ->
     Left = construct(factor, [L]),
     Right = construct(factor, [R]),
