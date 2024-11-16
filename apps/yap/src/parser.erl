@@ -4,24 +4,14 @@
 
 construct(expression, [{token, Type, Val, Line}]) when (Type == number) or (Type == ident) ->
     {expression, construct([{token, Type, Val, Line}])};
-construct(expression, [L, {token, binop, Sym, _}, R]) when (Sym == plussym) or (Sym == minussym) ->
-    Left = construct(term, [L]),
-    Right = construct(term, [R]),
-    Op =
-        case Sym of
-            plussym -> plus;
-            minussym -> minus
-        end,
-    {expression, Left, Op, Right};
-construct(expression, [L, {token, binop, Sym, _} | R]) when (Sym == plussym) or (Sym == minussym) ->
-    Left = construct(term, [L]),
-    Right = construct(expression, R),
-    Op =
-        case Sym of
-            plussym -> plus;
-            minussym -> minus
-        end,
-    {expression, Left, Op, Right};
+construct(expression, Tokens) ->
+    case find_symbol([plussym, minussym], Tokens) of
+        {Before, undefined, []} ->
+            {expression, construct(term, Before)};
+        {Before, Symbol, After} ->
+            {expression, construct(term, Before), symbol_to_op(Symbol),
+                construct(expression, After)}
+    end;
 construct(term, [{token, Type, Val, Line}]) when (Type == number) or (Type == ident) ->
     {term, construct(factor, [{token, Type, Val, Line}])};
 % TODO: This case might be redundant (or not), hmm...
@@ -52,3 +42,18 @@ construct(factor, [{token, ident, Val, _}]) ->
 construct(factor, [{token, number, Val, _}]) ->
     {factor, number, Val}.
 construct(Tokens) -> construct(term, Tokens).
+
+find_symbol(Symbols, Tokens) -> find_symbol(Symbols, Tokens, []).
+find_symbol(_, [], Passed) ->
+    {lists:reverse(Passed), undefined, []};
+find_symbol(Symbols, [{token, Type, TSym, Line} | Tokens], Passed) ->
+    Is_member = lists:member(TSym, Symbols),
+    if
+        Is_member -> {lists:reverse(Passed), TSym, Tokens};
+        true -> find_symbol(Symbols, Tokens, [{token, Type, TSym, Line} | Passed])
+    end.
+
+symbol_to_op(multsym) -> mul;
+symbol_to_op(slashsym) -> ddiv;
+symbol_to_op(plussym) -> plus;
+symbol_to_op(minussym) -> sub.

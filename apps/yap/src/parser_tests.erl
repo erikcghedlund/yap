@@ -79,23 +79,32 @@ construct_expression2_test() ->
     ).
 construct_expression3_test() ->
     ?assertEqual(
-        {expression, {term, {factor, ident, "one"}}, plus, {term, {factor, ident, "two"}}},
+        {expression, {term, {factor, ident, "one"}}, plus,
+            {expression, {term, {factor, ident, "two"}}}},
         parser:construct(expression, lexer:parse("one + two"))
     ).
 construct_expression4_test() ->
     ?assertEqual(
-        {expression, {term, {factor, number, 1}}, minus, {term, {factor, number, 3}}},
+        {expression, {term, {factor, number, 1}}, sub, {expression, {term, {factor, number, 3}}}},
         parser:construct(expression, lexer:parse("1 - 3"))
     ).
 construct_expression5_test() ->
     ?assertEqual(
         {expression, {term, {factor, ident, "one"}}, plus,
-            {expression, {term, {factor, ident, "two"}}, minus, {term, {factor, ident, "three"}}}},
+            {expression, {term, {factor, ident, "two"}}, sub,
+                {expression, {term, {factor, ident, "three"}}}}},
         parser:construct(expression, lexer:parse("one + two - three"))
     ).
 construct_expression6_test() ->
     ?assertEqual(
-        {expression, {term, {factor, number, 1}}, minus,
-            {expression, {term, {factor, number, 3}}, plus, {term, {factor, number, 5}}}},
+        {expression, {term, {factor, number, 1}}, sub,
+            {expression, {term, {factor, number, 3}}, plus,
+                {expression, {term, {factor, number, 5}}}}},
         parser:construct(expression, lexer:parse("1 - 3 + 5"))
+    ).
+construct_expression7_test() ->
+    ?assertEqual(
+        {expression, {term, {factor, number, 1}}, plus,
+            {expression, {term, {factor, number, 2}, mul, {factor, number, 3}}}},
+        parser:construct(expression, lexer:parse("1 + 2 * 3"))
     ).
