@@ -108,3 +108,10 @@ construct_expression7_test() ->
             {expression, {term, {factor, number, 2}, mul, {factor, number, 3}}}},
         parser:construct(expression, lexer:parse("1 + 2 * 3"))
     ).
+construct_expression8_test() ->
+    ?assertEqual(
+        {expression,
+            {term, {factor, number, 1}, mul, {term, {factor, number, 2}, mul, {factor, number, 3}}},
+            plus, {expression, {term, {factor, number, 4}}}},
+        parser:construct(expression, lexer:parse("1 * 2 * 3 + 4"))
+    ).
