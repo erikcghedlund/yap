@@ -2,8 +2,6 @@
 -include_lib("eunit/include/eunit.hrl").
 -export([construct/1, construct/2]).
 
-construct(expression, [{token, Type, Val, Line}]) when (Type == number) or (Type == ident) ->
-    {expression, construct([{token, Type, Val, Line}])};
 construct(expression, Tokens) ->
     case find_symbol([plussym, minussym], Tokens) of
         {Before, undefined, []} ->
