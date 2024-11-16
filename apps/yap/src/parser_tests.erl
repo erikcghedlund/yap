@@ -116,3 +116,33 @@ construct_expression8_test() ->
             plus, {expression, {term, {factor, number, 4}}}},
         parser:construct(expression, lexer:parse("1 * 2 * 3 + 4"))
     ).
+
+construct_condition1_test() ->
+    ?assertEqual(
+        {condition, {odd, {expression, {term, {factor, number, 1}}}}},
+        parser:construct(condition, lexer:parse("odd 1"))
+    ).
+construct_condition2_test() ->
+    ?assertEqual(
+        {condition,
+            {odd,
+                {expression, {term, {factor, number, 1}}, plus,
+                    {expression, {term, {factor, number, 2}}}}}},
+        parser:construct(condition, lexer:parse("odd 1 + 2"))
+    ).
+construct_condition3_test() ->
+    ?assertEqual(
+        {condition,
+            {odd,
+                {expression, {term, {factor, number, 1}}, plus,
+                    {expression, {term, {factor, number, 2}, mul, {term, {factor, number, 3}}}}}}},
+        parser:construct(condition, lexer:parse("odd 1 + 2 * 3"))
+    ).
+construct_condition4_test() ->
+    ?assertEqual(
+        {condition,
+            {odd,
+                {expression, {term, {factor, number, 1}, mul, {term, {factor, number, 2}}}, plus,
+                    {expression, {term, {factor, number, 3}, mul, {term, {factor, number, 4}}}}}}},
+        parser:construct(condition, lexer:parse("odd 1 * 2 + 3 * 4"))
+    ).
