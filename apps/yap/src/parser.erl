@@ -17,10 +17,8 @@ construct(term, Tokens) ->
         {Before, Symbol, After} ->
             {term, construct(factor, Before), symbol_to_op(Symbol), construct(term, After)}
     end;
-construct(factor, [{token, ident, Val, _}]) ->
-    {factor, ident, Val};
-construct(factor, [{token, number, Val, _}]) ->
-    {factor, number, Val}.
+construct(factor, [{token, Type, Val, _}]) when (Type == ident) or (Type == number) ->
+    {factor, Type, Val}.
 construct(Tokens) -> construct(term, Tokens).
 
 find_symbol(Symbols, Tokens) -> find_symbol(Symbols, Tokens, []).
