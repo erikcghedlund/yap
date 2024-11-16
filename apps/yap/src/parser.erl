@@ -10,30 +10,12 @@ construct(expression, Tokens) ->
             {expression, construct(term, Before), symbol_to_op(Symbol),
                 construct(expression, After)}
     end;
-construct(term, [{token, Type, Val, Line}]) when (Type == number) or (Type == ident) ->
-    {term, construct(factor, [{token, Type, Val, Line}])};
-% TODO: This case might be redundant (or not), hmm...
-construct(term, [L, {token, binop, Sym, _}, R]) ->
-    Left = construct(factor, [L]),
-    Right = construct(factor, [R]),
-    case {Sym, Left, Right} of
-        {multsym, {factor, _, _}, {factor, _, _}} ->
-            {term, Left, mul, Right};
-        {slashsym, {factor, _, _}, {factor, _, _}} ->
-            {term, Left, ddiv, Right};
-        _ ->
-            error("Illegal syntax")
-    end;
-construct(term, [L, {token, binop, Sym, _} | R]) when (Sym == multsym) or (Sym == slashsym) ->
-    Left = construct(factor, [L]),
-    Right = construct(term, R),
-    case {Sym, Left, Right} of
-        {multsym, {factor, _, _}, {term, _, _, _}} ->
-            {term, Left, mul, Right};
-        {slashsym, {factor, _, _}, {term, _, _, _}} ->
-            {term, Left, ddiv, Right};
-        _ ->
-            error("Illegal syntax")
+construct(term, Tokens) ->
+    case find_symbol([multsym, slashsym], Tokens) of
+        {Before, undefined, []} ->
+            {term, construct(factor, Before)};
+        {Before, Symbol, After} ->
+            {term, construct(factor, Before), symbol_to_op(Symbol), construct(term, After)}
     end;
 construct(factor, [{token, ident, Val, _}]) ->
     {factor, ident, Val};

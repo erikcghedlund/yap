@@ -24,46 +24,46 @@ construct_term8_test() ->
     ).
 construct_term1_test() ->
     ?assertEqual(
-        {term, {factor, number, 1}, mul, {factor, number, 2}},
+        {term, {factor, number, 1}, mul, {term, {factor, number, 2}}},
         parser:construct(term, lexer:parse("1 * 2"))
     ).
 construct_term2_test() ->
     ?assertEqual(
-        {term, {factor, number, 9}, ddiv, {factor, number, 2}},
+        {term, {factor, number, 9}, ddiv, {term, {factor, number, 2}}},
         parser:construct(term, lexer:parse("9 / 2"))
     ).
 construct_term3_test() ->
     ?assertEqual(
-        {term, {factor, ident, "x"}, mul, {factor, number, 2}},
+        {term, {factor, ident, "x"}, mul, {term, {factor, number, 2}}},
         parser:construct(term, lexer:parse("x * 2"))
     ).
 construct_term4_test() ->
     ?assertEqual(
-        {term, {factor, number, 1}, ddiv, {factor, ident, "res"}},
+        {term, {factor, number, 1}, ddiv, {term, {factor, ident, "res"}}},
         parser:construct(term, lexer:parse("1 / res"))
     ).
 construct_term5_test() ->
     ?assertEqual(
-        {term, {factor, ident, "a"}, mul, {factor, ident, "b"}},
+        {term, {factor, ident, "a"}, mul, {term, {factor, ident, "b"}}},
         parser:construct(term, lexer:parse("a * b"))
     ).
 construct_term6_test() ->
     ?assertEqual(
-        {term, {factor, ident, "one"}, ddiv, {factor, ident, "res"}},
+        {term, {factor, ident, "one"}, ddiv, {term, {factor, ident, "res"}}},
         parser:construct(term, lexer:parse("one / res"))
     ).
 construct_term9_test() ->
     ?assertEqual(
         {term, {factor, ident, "a"}, mul,
             {term, {factor, ident, "b"}, mul,
-                {term, {factor, ident, "c"}, mul, {factor, ident, "d"}}}},
+                {term, {factor, ident, "c"}, mul, {term, {factor, ident, "d"}}}}},
         parser:construct(term, lexer:parse("a * b * c * d"))
     ).
 construct_term10_test() ->
     ?assertEqual(
         {term, {factor, ident, "one"}, ddiv,
             {term, {factor, ident, "res"}, mul,
-                {term, {factor, number, 3}, ddiv, {factor, ident, "two"}}}},
+                {term, {factor, number, 3}, ddiv, {term, {factor, ident, "two"}}}}},
         parser:construct(term, lexer:parse("one / res * 3 / two"))
     ).
 
@@ -105,13 +105,14 @@ construct_expression6_test() ->
 construct_expression7_test() ->
     ?assertEqual(
         {expression, {term, {factor, number, 1}}, plus,
-            {expression, {term, {factor, number, 2}, mul, {factor, number, 3}}}},
+            {expression, {term, {factor, number, 2}, mul, {term, {factor, number, 3}}}}},
         parser:construct(expression, lexer:parse("1 + 2 * 3"))
     ).
 construct_expression8_test() ->
     ?assertEqual(
         {expression,
-            {term, {factor, number, 1}, mul, {term, {factor, number, 2}, mul, {factor, number, 3}}},
+            {term, {factor, number, 1}, mul,
+                {term, {factor, number, 2}, mul, {term, {factor, number, 3}}}},
             plus, {expression, {term, {factor, number, 4}}}},
         parser:construct(expression, lexer:parse("1 * 2 * 3 + 4"))
     ).
