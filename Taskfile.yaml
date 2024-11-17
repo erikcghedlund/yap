@@ -27,3 +27,8 @@ tasks:
       TARGET: '{{index .MATCH 0}}'
     cmds:
       - escript _build/default/lib/yap/ebin/{{.TARGET}}.beam {{.CLI_ARGS}}
+  repl:
+    deps:
+      [build]
+    cmds:
+      - erl  -pa _build/default/lib/yap/ebin/
