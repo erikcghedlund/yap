@@ -6,11 +6,16 @@ tasks:
       - apps/yap/src/*.erl
     cmds:
       - rebar3 fmt "apps/yap/src/*.erl"
+  type-check:
+    sources:
+      - apps/yap/src/*.erl
+    cmds:
+      - rebar3 fmt "apps/yap/src/*.erl"
   build:
     sources:
       - apps/yap/src/*.erl
     deps:
-      [format]
+      [format, type-check]
     cmds:
       - rebar3 compile
   test:
