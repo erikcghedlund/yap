@@ -1,10 +1,10 @@
 # YAP
 
-*YAP* is Yet Another PL/0. This is a (WIP) compiler for the PL/0 language implementation that follows [Adam Dunsons specification](https://raw.githubusercontent.com/adamdunson/pl0-compiler/master/doc/PL0%20User's%20Manual.pdf).
+*YAP* is Yet Another PL/0. This is a (WIP) compiler for the PL/0 language implementation that follows [Adam Dunson's specification](https://raw.githubusercontent.com/adamdunson/pl0-compiler/master/doc/PL0%20User's%20Manual.pdf).
 
 ## Description
 
-YAP is, as mentioned previously a compiler for the PL/0 language. It is written in Erlang using OTP 27 and is currently in very early stages *(read: not functional)*.
+YAP is, as mentioned previously, a compiler for the PL/0 language. It is written in Erlang using OTP 27 and is currently in very early stages *(read: not functional)*.
 YAP is entirely handwritten using a recursive descent parser, keeping the number of dependencies low.
 
 There are 3 main reasons for this project:
@@ -49,7 +49,7 @@ task test
 
 ### Running
 
-There is currently no good usage for running the program, but some individual components can be ran. For instance, to see the generated tokens run:
+There is currently no good usage for running the program, but some individual components can be run. For instance, to see the generated tokens run:
 
 ```
 task run-lexer -- <file>
