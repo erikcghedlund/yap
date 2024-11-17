@@ -4,6 +4,12 @@
 
 construct(statement, [{token, ident, Val, _}, {token, separator, becomesym, _} | Tokens]) ->
     {statement, {Val, become, construct(expression, Tokens)}};
+construct(statement, [{token, keyword, Sym, _}, {token, ident, Val, _}]) when
+    (Sym == callsym) or (Sym == insym)
+->
+    {statement, {symbol_to_op(Sym), Val}};
+construct(statement, [{token, keyword, outsym, _} | Tokens]) ->
+    {statement, {out, construct(expression, Tokens)}};
 construct(condition, [{token, keyword, oddsym, _} | Tokens]) ->
     {condition, {odd, construct(expression, Tokens)}};
 construct(condition, Tokens) ->
@@ -47,4 +53,6 @@ find_symbol(type, Types, [{token, Type, TSym, Line} | Tokens], Passed) ->
 symbol_to_op(multsym) -> mul;
 symbol_to_op(slashsym) -> ddiv;
 symbol_to_op(plussym) -> plus;
-symbol_to_op(minussym) -> sub.
+symbol_to_op(minussym) -> sub;
+symbol_to_op(callsym) -> call;
+symbol_to_op(insym) -> in.

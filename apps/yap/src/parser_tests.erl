@@ -229,19 +229,19 @@ construct_condition13_test() ->
         }},
         parser:construct(condition, lexer:parse("2 + 1 = 1 + 2"))
     ).
-construct_condition14_test() ->
+construct_statement_become1_test() ->
     ?assertEqual(
         {statement, {"one", become, {expression, {term, {factor, number, 1}}}}},
         parser:construct(statement, lexer:parse("one := 1"))
     ).
-construct_condition15_test() ->
+construct_statement_become2_test() ->
     ?assertEqual(
         {statement,
             {"two", become,
                 {expression, {term, {factor, number, 10}, ddiv, {term, {factor, number, 5}}}}}},
         parser:construct(statement, lexer:parse("two := 10/5"))
     ).
-construct_condition16_test() ->
+construct_statement_become3_test() ->
     ?assertEqual(
         {statement,
             {"three", become,
@@ -249,11 +249,89 @@ construct_condition16_test() ->
                     {expression, {term, {factor, number, 5}}}}}},
         parser:construct(statement, lexer:parse("three := 8 - 5"))
     ).
-construct_condition17_test() ->
+construct_statement_become4_test() ->
     ?assertEqual(
         {statement,
             {"four", become,
                 {expression, {term, {factor, number, 2}}, plus,
                     {expression, {term, {factor, ident, "two"}}}}}},
         parser:construct(statement, lexer:parse("four := 2 + two"))
+    ).
+construct_statement_call1_test() ->
+    ?assertEqual(
+        {statement, {call, "foo"}},
+        parser:construct(statement, lexer:parse("call foo"))
+    ).
+construct_statement_call2_test() ->
+    ?assertEqual(
+        {statement, {call, "bar"}},
+        parser:construct(statement, lexer:parse("call bar"))
+    ).
+construct_statement_in1_test() ->
+    ?assertEqual(
+        {statement, {in, "foo"}},
+        parser:construct(statement, lexer:parse("in foo"))
+    ).
+construct_statement_in2_test() ->
+    ?assertEqual(
+        {statement, {in, "bar"}},
+        parser:construct(statement, lexer:parse("in bar"))
+    ).
+construct_statement_in3_test() ->
+    ?assertEqual(
+        {statement, {in, "foo"}},
+        parser:construct(statement, lexer:parse("read foo"))
+    ).
+construct_statement_in4_test() ->
+    ?assertEqual(
+        {statement, {in, "bar"}},
+        parser:construct(statement, lexer:parse("read bar"))
+    ).
+construct_statement_out1_test() ->
+    ?assertEqual(
+        {statement, {out, {expression, {term, {factor, ident, "foo"}}}}},
+        parser:construct(statement, lexer:parse("out foo"))
+    ).
+construct_statement_out2_test() ->
+    ?assertEqual(
+        {statement, {out, {expression, {term, {factor, ident, "bar"}}}}},
+        parser:construct(statement, lexer:parse("out bar"))
+    ).
+construct_statement_out3_test() ->
+    ?assertEqual(
+        {statement, {out, {expression, {term, {factor, number, 1}}}}},
+        parser:construct(statement, lexer:parse("out 1"))
+    ).
+construct_statement_out4_test() ->
+    ?assertEqual(
+        {statement,
+            {out,
+                {expression, {term, {factor, number, 1}}, plus,
+                    {expression, {term, {factor, number, 2}}, plus,
+                        {expression, {term, {factor, ident, "bar"}}}}}}},
+        parser:construct(statement, lexer:parse("out 1 + 2 + bar"))
+    ).
+construct_statement_out5_test() ->
+    ?assertEqual(
+        {statement, {out, {expression, {term, {factor, ident, "foo"}}}}},
+        parser:construct(statement, lexer:parse("write foo"))
+    ).
+construct_statement_out6_test() ->
+    ?assertEqual(
+        {statement, {out, {expression, {term, {factor, ident, "bar"}}}}},
+        parser:construct(statement, lexer:parse("write bar"))
+    ).
+construct_statement_out7_test() ->
+    ?assertEqual(
+        {statement, {out, {expression, {term, {factor, number, 1}}}}},
+        parser:construct(statement, lexer:parse("write 1"))
+    ).
+construct_statement_out8_test() ->
+    ?assertEqual(
+        {statement,
+            {out,
+                {expression, {term, {factor, number, 1}}, plus,
+                    {expression, {term, {factor, number, 2}}, plus,
+                        {expression, {term, {factor, ident, "bar"}}}}}}},
+        parser:construct(statement, lexer:parse("write 1 + 2 + bar"))
     ).
