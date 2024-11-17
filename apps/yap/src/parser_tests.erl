@@ -229,3 +229,31 @@ construct_condition13_test() ->
         }},
         parser:construct(condition, lexer:parse("2 + 1 = 1 + 2"))
     ).
+construct_condition14_test() ->
+    ?assertEqual(
+        {statement, {"one", become, {expression, {term, {factor, number, 1}}}}},
+        parser:construct(statement, lexer:parse("one := 1"))
+    ).
+construct_condition15_test() ->
+    ?assertEqual(
+        {statement,
+            {"two", become,
+                {expression, {term, {factor, number, 10}, ddiv, {term, {factor, number, 5}}}}}},
+        parser:construct(statement, lexer:parse("two := 10/5"))
+    ).
+construct_condition16_test() ->
+    ?assertEqual(
+        {statement,
+            {"three", become,
+                {expression, {term, {factor, number, 8}}, sub,
+                    {expression, {term, {factor, number, 5}}}}}},
+        parser:construct(statement, lexer:parse("three := 8 - 5"))
+    ).
+construct_condition17_test() ->
+    ?assertEqual(
+        {statement,
+            {"four", become,
+                {expression, {term, {factor, number, 2}}, plus,
+                    {expression, {term, {factor, ident, "two"}}}}}},
+        parser:construct(statement, lexer:parse("four := 2 + two"))
+    ).

@@ -2,6 +2,8 @@
 -include_lib("eunit/include/eunit.hrl").
 -export([construct/1, construct/2]).
 
+construct(statement, [{token, ident, Val, _}, {token, separator, becomesym, _} | Tokens]) ->
+    {statement, {Val, become, construct(expression, Tokens)}};
 construct(condition, [{token, keyword, oddsym, _} | Tokens]) ->
     {condition, {odd, construct(expression, Tokens)}};
 construct(condition, Tokens) ->
@@ -39,7 +41,7 @@ find_symbol(type, Types, [{token, Type, TSym, Line} | Tokens], Passed) ->
     Is_member = lists:member(Type, Types),
     if
         Is_member -> {lists:reverse(Passed), TSym, Tokens};
-        true -> find_symbol(symbol, Types, Tokens, [{token, Type, TSym, Line} | Passed])
+        true -> find_symbol(type, Types, Tokens, [{token, Type, TSym, Line} | Passed])
     end.
 
 symbol_to_op(multsym) -> mul;
