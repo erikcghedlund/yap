@@ -9,7 +9,7 @@
 
 parse(Str) -> parse(Str, 1).
 
--spec parse(Str :: [integer()], Line :: integer()) -> [token].
+-spec parse(Str :: [integer()], Line :: integer()) -> [#token{}].
 parse([$+ | T], Line) ->
     [#token{type = binop, val = plussym, line = Line} | parse(T, Line)];
 parse([$- | T], Line) ->
