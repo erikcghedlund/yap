@@ -2,11 +2,11 @@
 -include_lib("eunit/include/eunit.hrl").
 
 parse_keyword_begin_test() -> ?assertEqual(lexer:parse("begin"), [{token, keyword, beginsym, 1}]).
-parse_keyword_read_test() -> ?assertEqual(lexer:parse("read"), [{token, keyword, readsym, 1}]).
+parse_keyword_read_test() -> ?assertEqual(lexer:parse("read"), [{token, keyword, insym, 1}]).
 parse_keyword_call_test() -> ?assertEqual(lexer:parse("call"), [{token, keyword, callsym, 1}]).
 parse_keyword_do_test() -> ?assertEqual(lexer:parse("do"), [{token, keyword, dosym, 1}]).
 parse_keyword_while_test() -> ?assertEqual(lexer:parse("while"), [{token, keyword, whilesym, 1}]).
-parse_keyword_write_test() -> ?assertEqual(lexer:parse("write"), [{token, keyword, writesym, 1}]).
+parse_keyword_write_test() -> ?assertEqual(lexer:parse("write"), [{token, keyword, outsym, 1}]).
 parse_keyword_if_test() -> ?assertEqual(lexer:parse("if"), [{token, keyword, ifsym, 1}]).
 parse_keyword_else_test() -> ?assertEqual(lexer:parse("else"), [{token, keyword, elsesym, 1}]).
 parse_keyword_end_test() -> ?assertEqual(lexer:parse("end"), [{token, keyword, endsym, 1}]).

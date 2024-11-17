@@ -57,10 +57,8 @@ parse([C | T], Line) when ?IS_CHAR(C) ->
     case Ident of
         "call" -> [#token{type = keyword, val = callsym, line = Line} | parse(Tail, Line)];
         "begin" -> [#token{type = keyword, val = beginsym, line = Line} | parse(Tail, Line)];
-        "read" -> [#token{type = keyword, val = readsym, line = Line} | parse(Tail, Line)];
         "do" -> [#token{type = keyword, val = dosym, line = Line} | parse(Tail, Line)];
         "while" -> [#token{type = keyword, val = whilesym, line = Line} | parse(Tail, Line)];
-        "write" -> [#token{type = keyword, val = writesym, line = Line} | parse(Tail, Line)];
         "if" -> [#token{type = keyword, val = ifsym, line = Line} | parse(Tail, Line)];
         "else" -> [#token{type = keyword, val = elsesym, line = Line} | parse(Tail, Line)];
         "end" -> [#token{type = keyword, val = endsym, line = Line} | parse(Tail, Line)];
@@ -71,6 +69,10 @@ parse([C | T], Line) when ?IS_CHAR(C) ->
         "procedure" -> [#token{type = keyword, val = procsym, line = Line} | parse(Tail, Line)];
         "out" -> [#token{type = keyword, val = outsym, line = Line} | parse(Tail, Line)];
         "in" -> [#token{type = keyword, val = insym, line = Line} | parse(Tail, Line)];
+        % write keyword seems to be a bug in the specification?
+        "write" -> [#token{type = keyword, val = outsym, line = Line} | parse(Tail, Line)];
+        % read keyword seems to also be a bug in the specification?
+        "read" -> [#token{type = keyword, val = insym, line = Line} | parse(Tail, Line)];
         _ -> [#token{type = ident, val = Ident, line = Line} | parse(Tail, Line)]
     end;
 parse([], _) ->
