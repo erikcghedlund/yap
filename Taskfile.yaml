@@ -10,7 +10,7 @@ tasks:
     sources:
       - apps/yap/src/*.erl
     cmds:
-      - rebar3 fmt "apps/yap/src/*.erl"
+      - rebar3 gradualizer
   build:
     sources:
       - apps/yap/src/*.erl
