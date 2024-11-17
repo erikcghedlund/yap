@@ -1,7 +1,20 @@
 -module(parser).
 -include_lib("eunit/include/eunit.hrl").
--export([construct/1, construct/2]).
+-export([construct/2]).
 
+-type category() ::
+    program
+    | block
+    | constdec
+    | vardec
+    | procdec
+    | statement
+    | condition
+    | expression
+    | term
+    | factor.
+
+-spec construct(Type :: category(), Tokens :: [tuple()]) -> tuple().
 construct(statement, [{token, ident, Val, _}, {token, separator, becomesym, _} | Tokens]) ->
     {statement, {Val, become, construct(expression, Tokens)}};
 construct(statement, [{token, keyword, Sym, _}, {token, ident, Val, _}]) when
@@ -32,8 +45,8 @@ construct(term, Tokens) ->
     end;
 construct(factor, [{token, Type, Val, _}]) when (Type == ident) or (Type == number) ->
     {factor, Type, Val}.
-construct(Tokens) -> construct(term, Tokens).
 
+-spec find_symbol(Type :: atom(), Targets :: [atom()], Tokens :: [tuple()]) -> tuple().
 find_symbol(Field, Symbols, Tokens) -> find_symbol(Field, Symbols, Tokens, []).
 find_symbol(_, _, [], Passed) ->
     {lists:reverse(Passed), undefined, []};
@@ -50,6 +63,7 @@ find_symbol(type, Types, [{token, Type, TSym, Line} | Tokens], Passed) ->
         true -> find_symbol(type, Types, Tokens, [{token, Type, TSym, Line} | Passed])
     end.
 
+-spec symbol_to_op(Symbol :: atom()) -> atom().
 symbol_to_op(multsym) -> mul;
 symbol_to_op(slashsym) -> ddiv;
 symbol_to_op(plussym) -> plus;
