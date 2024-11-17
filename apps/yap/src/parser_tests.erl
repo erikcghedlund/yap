@@ -146,3 +146,86 @@ construct_condition4_test() ->
                     {expression, {term, {factor, number, 3}, mul, {term, {factor, number, 4}}}}}}},
         parser:construct(condition, lexer:parse("odd 1 * 2 + 3 * 4"))
     ).
+construct_condition5_test() ->
+    ?assertEqual(
+        {condition, {
+            {expression, {term, {factor, number, 1}}},
+            equalsym,
+            {expression, {term, {factor, number, 1}}}
+        }},
+        parser:construct(condition, lexer:parse("1 = 1"))
+    ).
+construct_condition6_test() ->
+    ?assertEqual(
+        {condition, {
+            {expression, {term, {factor, number, 1}}},
+            neqsym,
+            {expression, {term, {factor, number, 1}}}
+        }},
+        parser:construct(condition, lexer:parse("1 <> 1"))
+    ).
+construct_condition7_test() ->
+    ?assertEqual(
+        {condition, {
+            {expression, {term, {factor, number, 1}}},
+            leqsym,
+            {expression, {term, {factor, number, 1}}}
+        }},
+        parser:construct(condition, lexer:parse("1 <= 1"))
+    ).
+construct_condition8_test() ->
+    ?assertEqual(
+        {condition, {
+            {expression, {term, {factor, number, 1}}},
+            geqsym,
+            {expression, {term, {factor, number, 1}}}
+        }},
+        parser:construct(condition, lexer:parse("1 >= 1"))
+    ).
+construct_condition9_test() ->
+    ?assertEqual(
+        {condition, {
+            {expression, {term, {factor, number, 1}}},
+            lessym,
+            {expression, {term, {factor, number, 1}}}
+        }},
+        parser:construct(condition, lexer:parse("1 < 1"))
+    ).
+construct_condition10_test() ->
+    ?assertEqual(
+        {condition, {
+            {expression, {term, {factor, number, 1}}},
+            gtrsym,
+            {expression, {term, {factor, number, 1}}}
+        }},
+        parser:construct(condition, lexer:parse("1 > 1"))
+    ).
+construct_condition11_test() ->
+    ?assertEqual(
+        {condition, {
+            {expression, {term, {factor, ident, "one"}}},
+            gtrsym,
+            {expression, {term, {factor, ident, "two"}}}
+        }},
+        parser:construct(condition, lexer:parse("one > two"))
+    ).
+construct_condition12_test() ->
+    ?assertEqual(
+        {condition, {
+            {expression, {term, {factor, number, 2}, mul, {term, {factor, number, 1}}}},
+            equalsym,
+            {expression, {term, {factor, number, 1}, mul, {term, {factor, number, 2}}}}
+        }},
+        parser:construct(condition, lexer:parse("2 * 1 = 1 * 2"))
+    ).
+construct_condition13_test() ->
+    ?assertEqual(
+        {condition, {
+            {expression, {term, {factor, number, 2}}, plus,
+                {expression, {term, {factor, number, 1}}}},
+            equalsym,
+            {expression, {term, {factor, number, 1}}, plus,
+                {expression, {term, {factor, number, 2}}}}
+        }},
+        parser:construct(condition, lexer:parse("2 + 1 = 1 + 2"))
+    ).
