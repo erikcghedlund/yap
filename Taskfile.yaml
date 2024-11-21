@@ -32,7 +32,8 @@ tasks:
       [build-debug]
     silent: true
     cmds:
-      - for: ['lexer']
+
+      - for: ['lexer', 'parser']
         cmd: echo "Testing {{ .ITEM }} module..."; erl -pa bin -eval '{{ .ITEM }}:test(), halt().' -noshell
   run-*:
     deps:
@@ -121,3 +122,8 @@ tasks:
       - mkdir -p bin
       - sed "1s/^/#!\/usr\/bin\/env escript\n%%! +sbtu +A0 -sname erlfmt -pa .\/thirdparty\/erlfmt\/ebin\ -noinput -noshell -mode minimal\n/" ebin/erlfmt.beam > ./bin/erlfmt
       - chmod +x bin/erlfmt
+  repl:
+    deps:
+      [build]
+    cmds:
+      - erl  -pa bin
