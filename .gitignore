@@ -15,8 +15,7 @@ deps
 .rebar3
 _build/
 _checkouts/
+thirdparty/
 .task/
 code_examples/
-rebar.lock
 src
-utils/rebar.lock

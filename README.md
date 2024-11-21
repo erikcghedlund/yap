@@ -26,10 +26,9 @@ There are 3 main reasons for this project:
 ### Dependencies
 
 - [Erlang](https://www.erlang.org/downloads)
-- [Rebar3](https://www.rebar3.org/docs/getting-started/)
 - [(go-)task](https://taskfile.dev/installation/)
 
-Rebar3 will resolve the remaining dependencies
+`task` will resolve the remaining dependencies
 
 ### Building
 
