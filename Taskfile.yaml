@@ -2,10 +2,11 @@ version: '3'
 
 tasks:
   format:
+    deps: [build_erlfmt]
     sources:
       - apps/yap/src/*.erl
     cmds:
-      - rebar3 fmt "apps/yap/src/*.erl"
+      - thirdparty/erlfmt/bin/erlfmt --write "apps/yap/src/*.erl"
   type-check:
     dir:
       apps/yap/src
@@ -16,27 +17,30 @@ tasks:
     cmds:
     - for: sources
       cmd: ../../../thirdparty/Gradualizer/bin/gradualizer "{{ .ITEM }}"
-  build:
+  build-debug:
+    aliases: [build]
     sources:
       - apps/yap/src/*.erl
     deps:
       [format, type-check]
     cmds:
-      - rebar3 compile
+      # TODO: Move out
+      - mkdir bin -p
+      - erlc -o bin apps/yap/src/*.erl
   test:
     deps:
-      [build]
+      [build-debug]
     silent: true
     cmds:
       - for: ['lexer']
-        cmd: echo "Testing {{ .ITEM }} module..."; erl -pa _build/default/lib/yap/ebin/ -eval '{{ .ITEM }}:test(), halt().' -noshell 
+        cmd: echo "Testing {{ .ITEM }} module..."; erl -pa bin -eval '{{ .ITEM }}:test(), halt().' -noshell
   run-*:
     deps:
-      [build]
+      [build-debug]
     vars:
       TARGET: '{{index .MATCH 0}}'
     cmds:
-      - escript _build/default/lib/yap/ebin/{{.TARGET}}.beam {{.CLI_ARGS}}
+      - escript bin/{{.TARGET}}.beam {{.CLI_ARGS}}
 
   thirdparty:
     run: once
@@ -76,5 +80,44 @@ tasks:
       - '{{ .SOURCE }}'
     cmds:
       - make escript
+  download_erlfmt:
+    deps:
+      [thirdparty]
+    dir:
+      thirdparty
+    status:
+      - '[ {{ .COMMIT }} == $(cat {{ .GENERATES }}/commit) ]'
+    vars:
+      COMMIT: '32b2f06cda4d7b5d59c86f4689fc9039a894730c'
+      SOURCE: 'https://github.com/WhatsApp/erlfmt/archive/32b2f06cda4d7b5d59c86f4689fc9039a894730c.zip'
+      GENERATES: 'erlfmt'
+    generates:
+      - '{{ .GENERATES }}'
+    cmds:
+      - curl -L "{{ .SOURCE }}" -o "{{ .GENERATES }}.zip"
+      - unzip "{{ .GENERATES }}"
+      - mv "{{ .GENERATES }}-{{ .COMMIT }}" "{{ .GENERATES }}"
+      # Dirty hack, will solve better later
+      - curl "https://raw.githubusercontent.com/jcomellas/getopt/2ce84394e4c3970d66f26f04f76a4e1b71c8636c/src/getopt.erl" -o "{{ .GENERATES }}"/src/getopt.erl
+      - echo "{{ .COMMIT }}" > "{{ .GENERATES }}/commit"
+      - rm "{{ .GENERATES }}.zip"
   prune:
     rm -rf .task thirdparty
+  build_erlfmt:
+    dir: 'thirdparty/erlfmt'
+    deps:
+      [download_erlfmt]
+    vars:
+      GENERATES: './bin/erlfmt'
+      SOURCE: './src'
+    generates:
+      - '{{ .GENERATES }}'
+    sources:
+      - '{{ .SOURCE }}'
+    cmds:
+      - mkdir -p ebin
+      - erl -eval "yecc:file(\"src/erlfmt_parse.yrl\"), halt()." -noshell
+      - erlc -o ebin src/*.erl
+      - mkdir -p bin
+      - sed "1s/^/#!\/usr\/bin\/env escript\n%%! +sbtu +A0 -sname erlfmt -pa .\/thirdparty\/erlfmt\/ebin\ -noinput -noshell -mode minimal\n/" ebin/erlfmt.beam > ./bin/erlfmt
+      - chmod +x bin/erlfmt
