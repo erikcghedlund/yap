@@ -4,12 +4,12 @@ tasks:
   format:
     deps: [build_erlfmt]
     sources:
-      - apps/yap/src/*.erl
+      - ./src/*.erl
     cmds:
-      - thirdparty/erlfmt/bin/erlfmt --write "apps/yap/src/*.erl"
+      - thirdparty/erlfmt/bin/erlfmt --write "./src/*.erl"
   type-check:
     dir:
-      apps/yap/src
+      ./yap/src
     deps:
       [build_gradualizer]
     sources:
@@ -20,13 +20,11 @@ tasks:
   build-debug:
     aliases: [build]
     sources:
-      - apps/yap/src/*.erl
+      - ./src/*.erl
     deps:
-      [format, type-check]
+      [bin, format, type-check]
     cmds:
-      # TODO: Move out
-      - mkdir bin -p
-      - erlc -o bin apps/yap/src/*.erl
+      - erlc -o bin ./src/*.erl
   test:
     deps:
       [build-debug]
@@ -49,6 +47,12 @@ tasks:
       - test -d ./thirdparty
     cmds:
       - mkdir ./thirdparty
+  bin:
+    run: once
+    status:
+      - test -d ./bin
+    cmds:
+      - mkdir ./bin
   download_gradualizer:
     deps:
       [thirdparty]
@@ -103,7 +107,7 @@ tasks:
       - echo "{{ .COMMIT }}" > "{{ .GENERATES }}/commit"
       - rm "{{ .GENERATES }}.zip"
   prune:
-    rm -rf .task thirdparty
+    rm -rf .task thirdparty bin
   build_erlfmt:
     dir: 'thirdparty/erlfmt'
     deps:
@@ -126,4 +130,4 @@ tasks:
     deps:
       [build]
     cmds:
-      - erl  -pa bin
+      - erl -pa bin
