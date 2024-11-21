@@ -7,10 +7,15 @@ tasks:
     cmds:
       - rebar3 fmt "apps/yap/src/*.erl"
   type-check:
+    dir:
+      apps/yap/src
+    deps:
+      [build_gradualizer]
     sources:
-      - apps/yap/src/*.erl
+      - "*.erl"
     cmds:
-      - rebar3 fmt "apps/yap/src/*.erl"
+    - for: sources
+      cmd: ../../../thirdparty/Gradualizer/bin/gradualizer "{{ .ITEM }}"
   build:
     sources:
       - apps/yap/src/*.erl
@@ -32,3 +37,44 @@ tasks:
       TARGET: '{{index .MATCH 0}}'
     cmds:
       - escript _build/default/lib/yap/ebin/{{.TARGET}}.beam {{.CLI_ARGS}}
+
+  thirdparty:
+    run: once
+    status:
+      - test -d ./thirdparty
+    cmds:
+      - mkdir ./thirdparty
+  download_gradualizer:
+    deps:
+      [thirdparty]
+    dir:
+      thirdparty
+    status:
+      - '[ {{ .COMMIT }} == $(cat {{ .GENERATES }}/commit) ]'
+    vars:
+      COMMIT: '112646d85d0cc20364a56184ab30fb8d63a4a63f'
+      SOURCE: 'https://github.com/josefs/Gradualizer/archive/{{ .COMMIT }}.zip'
+      GENERATES: 'Gradualizer'
+    generates:
+      - '{{ .GENERATES }}'
+    cmds:
+      - curl -L "{{ .SOURCE }}" -o "{{ .GENERATES }}.zip"
+      - unzip "{{ .GENERATES }}"
+      - mv "{{ .GENERATES }}-{{ .COMMIT }}" "{{ .GENERATES }}"
+      - echo "{{ .COMMIT }}" > "{{ .GENERATES }}/commit"
+      - rm "{{ .GENERATES }}.zip"
+  build_gradualizer:
+    dir: 'thirdparty/Gradualizer'
+    deps:
+      [download_gradualizer]
+    vars:
+      GENERATES: './bin/gradualizer'
+      SOURCE: './src'
+    generates:
+      - '{{ .GENERATES }}'
+    sources:
+      - '{{ .SOURCE }}'
+    cmds:
+      - make escript
+  prune:
+    rm -rf .task thirdparty
