@@ -16,8 +16,9 @@ tasks:
       - for: sources
         cmd: ../../../thirdparty/Gradualizer/bin/gradualizer "{{ .ITEM }}"
   dialyze:
+    deps: [setup_dialyzer]
     cmds:
-      - dialyzer --src src/*.erl
+      - dialyzer --src src/*.erl --plt ./.plt
   build-debug:
     aliases: [build]
     sources:
@@ -98,7 +99,7 @@ tasks:
         -o "{{ .GENERATES }}"/src/getopt.erl
       - echo "{{ .COMMIT }}" > "{{ .GENERATES }}/commit"
       - rm "{{ .GENERATES }}.zip"
-  prune: rm -rf .task thirdparty bin
+  prune: rm -rf .task .plt thirdparty bin
   build_erlfmt:
     dir: 'thirdparty/erlfmt'
     deps: [download_erlfmt]
@@ -117,6 +118,14 @@ tasks:
       - sed "1s/^/#!\/usr\/bin\/env escript\n%%! +sbtu +A0 -sname erlfmt -pa .\/thirdparty\/erlfmt\/ebin\
         -noinput -noshell -mode minimal\n/" ebin/erlfmt.beam > ./bin/erlfmt
       - chmod +x bin/erlfmt
+  setup_dialyzer:
+    vars:
+      GENERATES: './.plt'
+      APPS: 'erts kernel stdlib mnesia compiler crypto parsetools'
+    status:
+      - test -e "{{ .GENERATES }}"
+    cmds:
+      - dialyzer --build_plt --output_plt "{{ .GENERATES }}" --apps {{ .APPS }}
   repl:
     deps: [build]
     cmds:
