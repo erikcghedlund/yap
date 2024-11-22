@@ -1,5 +1,4 @@
 version: '3'
-
 tasks:
   format:
     deps: [build_erlfmt]
@@ -9,15 +8,13 @@ tasks:
       - thirdparty/erlfmt/bin/erlfmt --write "./src/*.erl"
   gradualize:
     aliases: [type-check]
-    dir:
-      ./yap/src
-    deps:
-      [build_gradualizer]
+    dir: ./yap/src
+    deps: [build_gradualizer]
     sources:
       - "*.erl"
     cmds:
-    - for: sources
-      cmd: ../../../thirdparty/Gradualizer/bin/gradualizer "{{ .ITEM }}"
+      - for: sources
+        cmd: ../../../thirdparty/Gradualizer/bin/gradualizer "{{ .ITEM }}"
   dialyze:
     cmds:
       - dialyzer --src src/*.erl
@@ -25,25 +22,22 @@ tasks:
     aliases: [build]
     sources:
       - ./src/*.erl
-    deps:
-      [bin, format, gradualize, dialyze]
+    deps: [bin, format, gradualize, dialyze]
     cmds:
       - erlc +debug_info -DDEBUG -o bin ./src/*.erl ./tests/*.erl
   test:
-    deps:
-      [build-debug]
+    deps: [build-debug]
     silent: true
     cmds:
-    - for: ['lexer', 'parser']
-      cmd: echo "Testing {{ .ITEM }} module..."; erl -pa bin -eval '{{ .ITEM }}:test(), halt().' -noshell
+      - for: ['lexer', 'parser']
+        cmd: echo "Testing {{ .ITEM }} module..."; erl -pa bin -eval '{{ .ITEM }}:test(),
+          halt().' -noshell
   run-*:
-    deps:
-      [build-debug]
+    deps: [build-debug]
     vars:
       TARGET: '{{index .MATCH 0}}'
     cmds:
       - escript bin/{{.TARGET}}.beam {{.CLI_ARGS}}
-
   thirdparty:
     run: once
     status:
@@ -57,10 +51,8 @@ tasks:
     cmds:
       - mkdir ./bin
   download_gradualizer:
-    deps:
-      [thirdparty]
-    dir:
-      thirdparty
+    deps: [thirdparty]
+    dir: thirdparty
     status:
       - '[ {{ .COMMIT }} == $(cat {{ .GENERATES }}/commit) ]'
     vars:
@@ -77,8 +69,7 @@ tasks:
       - rm "{{ .GENERATES }}.zip"
   build_gradualizer:
     dir: 'thirdparty/Gradualizer'
-    deps:
-      [download_gradualizer]
+    deps: [download_gradualizer]
     vars:
       GENERATES: './bin/gradualizer'
       SOURCE: './src'
@@ -89,10 +80,8 @@ tasks:
     cmds:
       - make escript
   download_erlfmt:
-    deps:
-      [thirdparty]
-    dir:
-      thirdparty
+    deps: [thirdparty]
+    dir: thirdparty
     status:
       - '[ {{ .COMMIT }} == $(cat {{ .GENERATES }}/commit) ]'
     vars:
@@ -105,16 +94,14 @@ tasks:
       - curl -L "{{ .SOURCE }}" -o "{{ .GENERATES }}.zip"
       - unzip "{{ .GENERATES }}"
       - mv "{{ .GENERATES }}-{{ .COMMIT }}" "{{ .GENERATES }}"
-      # Dirty hack, will solve better later
-      - curl "https://raw.githubusercontent.com/jcomellas/getopt/2ce84394e4c3970d66f26f04f76a4e1b71c8636c/src/getopt.erl" -o "{{ .GENERATES }}"/src/getopt.erl
+      - curl "https://raw.githubusercontent.com/jcomellas/getopt/2ce84394e4c3970d66f26f04f76a4e1b71c8636c/src/getopt.erl"
+        -o "{{ .GENERATES }}"/src/getopt.erl
       - echo "{{ .COMMIT }}" > "{{ .GENERATES }}/commit"
       - rm "{{ .GENERATES }}.zip"
-  prune:
-    rm -rf .task thirdparty bin
+  prune: rm -rf .task thirdparty bin
   build_erlfmt:
     dir: 'thirdparty/erlfmt'
-    deps:
-      [download_erlfmt]
+    deps: [download_erlfmt]
     vars:
       GENERATES: './bin/erlfmt'
       SOURCE: './src'
@@ -127,10 +114,10 @@ tasks:
       - erl -eval "yecc:file(\"src/erlfmt_parse.yrl\"), halt()." -noshell
       - erlc -o ebin src/*.erl
       - mkdir -p bin
-      - sed "1s/^/#!\/usr\/bin\/env escript\n%%! +sbtu +A0 -sname erlfmt -pa .\/thirdparty\/erlfmt\/ebin\ -noinput -noshell -mode minimal\n/" ebin/erlfmt.beam > ./bin/erlfmt
+      - sed "1s/^/#!\/usr\/bin\/env escript\n%%! +sbtu +A0 -sname erlfmt -pa .\/thirdparty\/erlfmt\/ebin\
+        -noinput -noshell -mode minimal\n/" ebin/erlfmt.beam > ./bin/erlfmt
       - chmod +x bin/erlfmt
   repl:
-    deps:
-      [build]
+    deps: [build]
     cmds:
       - erl -pa bin
