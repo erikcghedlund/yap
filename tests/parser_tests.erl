@@ -1,4 +1,5 @@
 -module(parser_tests).
+-ifdef(DEBUG).
 -include_lib("eunit/include/eunit.hrl").
 
 construct_factor1_test() ->
@@ -335,3 +336,4 @@ construct_statement_out8_test() ->
                         {expression, {term, {factor, ident, "bar"}}}}}}},
         parser:construct(statement, lexer:parse("write 1 + 2 + bar"))
     ).
+-endif.

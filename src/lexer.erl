@@ -1,6 +1,10 @@
 -module(lexer).
+-ifdef(DEBUG).
 -include_lib("eunit/include/eunit.hrl").
+-compile(export_all).
+-else.
 -export([parse/1, main/1]).
+-endif.
 
 -record(token, {type :: atom(), val :: any(), line :: integer()}).
 

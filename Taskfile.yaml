@@ -7,7 +7,8 @@ tasks:
       - ./src/*.erl
     cmds:
       - thirdparty/erlfmt/bin/erlfmt --write "./src/*.erl"
-  type-check:
+  gradualize:
+    aliases: [type-check]
     dir:
       ./yap/src
     deps:
@@ -17,22 +18,24 @@ tasks:
     cmds:
     - for: sources
       cmd: ../../../thirdparty/Gradualizer/bin/gradualizer "{{ .ITEM }}"
+  dialyze:
+    cmds:
+      - dialyzer --src src/*.erl
   build-debug:
     aliases: [build]
     sources:
       - ./src/*.erl
     deps:
-      [bin, format, type-check]
+      [bin, format, gradualize, dialyze]
     cmds:
-      - erlc -o bin ./src/*.erl
+      - erlc +debug_info -DDEBUG -o bin ./src/*.erl ./tests/*.erl
   test:
     deps:
       [build-debug]
     silent: true
     cmds:
-
-      - for: ['lexer', 'parser']
-        cmd: echo "Testing {{ .ITEM }} module..."; erl -pa bin -eval '{{ .ITEM }}:test(), halt().' -noshell
+    - for: ['lexer', 'parser']
+      cmd: echo "Testing {{ .ITEM }} module..."; erl -pa bin -eval '{{ .ITEM }}:test(), halt().' -noshell
   run-*:
     deps:
       [build-debug]

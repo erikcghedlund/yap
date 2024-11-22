@@ -1,4 +1,5 @@
 -module(lexer_tests).
+-ifdef(DEBUG).
 -include_lib("eunit/include/eunit.hrl").
 
 parse_keyword_begin_test() -> ?assertEqual(lexer:parse("begin"), [{token, keyword, beginsym, 1}]).
@@ -178,3 +179,4 @@ parse_whole_program_test() ->
         {token, keyword, endsym, 10},
         {token, separator, semicolonsym, 10}
     ]).
+-endif.

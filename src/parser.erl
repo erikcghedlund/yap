@@ -1,6 +1,10 @@
 -module(parser).
+-ifdef(DEBUG).
 -include_lib("eunit/include/eunit.hrl").
+-compile(export_all).
+-else.
 -export([construct/2]).
+-endif.
 
 -type category() ::
     program
