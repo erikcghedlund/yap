@@ -4,8 +4,9 @@ tasks:
     deps: [build_erlfmt]
     sources:
       - ./src/*.erl
+      - ./tests/*.erl
     cmds:
-      - thirdparty/erlfmt/bin/erlfmt --write "./src/*.erl"
+      - thirdparty/erlfmt/bin/erlfmt --write "./src/*.erl" "./tests/*.erl"
   gradualize:
     aliases: [type-check]
     dir: ./yap/src
@@ -17,12 +18,15 @@ tasks:
         cmd: ../../../thirdparty/Gradualizer/bin/gradualizer "{{ .ITEM }}"
   dialyze:
     deps: [setup_dialyzer]
+    sources:
+      - "src/*.erl"
     cmds:
       - dialyzer --src src/*.erl --plt ./.plt
   build-debug:
     aliases: [build]
     sources:
       - ./src/*.erl
+      - ./tests/*.erl
     deps: [bin, format, gradualize, dialyze]
     cmds:
       - erlc +debug_info -DDEBUG -o bin ./src/*.erl ./tests/*.erl
