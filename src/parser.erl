@@ -20,7 +20,26 @@
 
 -record(parse_error, {error :: string(), help :: string(), line :: integer()}).
 
--spec construct(Type :: category(), Tokens :: [tuple()]) -> tuple().
+-spec construct(Type :: category(), Tokens :: [tuple()]) -> tuple() | #parse_error{}.
+construct(statement, [{token, keyword, beginsym, Line} | Tokens]) ->
+    case find_symbol(symbol, [endsym], Tokens) of
+        {_, undefined, _} ->
+            #parse_error{
+                error = "end expected",
+                help = "begin [statement-(s)] must be followed by an end",
+                line = Line
+            };
+        {Inner, _, []} ->
+            PartitionedTokens = split_statements(Inner),
+            Statements = lists:map(fun(List) -> construct(statement, List) end, PartitionedTokens),
+            {statement, {bbegin, Statements}};
+        _ ->
+            #parse_error{
+                error = "tokens after end keyword",
+                help = "This shouldn't happen and is likely a bug in the compiler...",
+                line = Line
+            }
+    end;
 % while statement
 construct(statement, [{token, keyword, whilesym, Line} | Tokens]) ->
     case find_symbol(symbol, [dosym], Tokens) of
@@ -114,3 +133,13 @@ symbol_to_op(plussym) -> plus;
 symbol_to_op(minussym) -> sub;
 symbol_to_op(callsym) -> call;
 symbol_to_op(insym) -> in.
+
+-spec split_statements(Tokens :: [tuple()]) -> [[tuple()]].
+split_statements(Tokens) -> split_statements(Tokens, [[]]).
+-spec split_statements(Tokens :: [tuple()], Accum :: [[tuple()]]) -> [[tuple()]].
+split_statements([], Accum) ->
+    lists:reverse(lists:map(fun(List) -> lists:reverse(List) end, Accum));
+split_statements([{token, separator, semicolonsym, _} | Tokens], Accum) ->
+    split_statements(Tokens, [[] | Accum]);
+split_statements([Head | Tokens], [Haccum | Accum]) ->
+    split_statements(Tokens, [[Head | Haccum] | Accum]).

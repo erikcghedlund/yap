@@ -375,3 +375,25 @@ construct_statement_if2_test() ->
 
         parser:construct(statement, lexer:parse("if 1 = 1 then out 2 else out 3"))
     ).
+construct_statement_begin1_test() ->
+    ?assertEqual(
+        {statement,
+            {bbegin, [
+                {statement,
+                    {while,
+                        {condition, {
+                            {expression, {term, {factor, number, 1}}},
+                            equalsym,
+                            {expression, {term, {factor, number, 1}}}
+                        }},
+                        {statement, {out, {expression, {term, {factor, number, 2}}}}}}},
+                {statement,
+                    {"four", become,
+                        {expression, {term, {factor, number, 2}}, plus,
+                            {expression, {term, {factor, ident, "two"}}}}}},
+                {statement, {call, "bar"}}
+            ]}},
+        parser:construct(
+            statement, lexer:parse("begin while 1 = 1 do out 2; four := 2 + two; call bar end")
+        )
+    ).
