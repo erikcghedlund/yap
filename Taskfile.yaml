@@ -9,13 +9,12 @@ tasks:
       - thirdparty/erlfmt/bin/erlfmt --write "./src/*.erl" "./tests/*.erl"
   gradualize:
     aliases: [type-check]
-    dir: ./yap/src
     deps: [build_gradualizer]
     sources:
-      - "*.erl"
+      - "./src/*.erl"
     cmds:
       - for: sources
-        cmd: ../../../thirdparty/Gradualizer/bin/gradualizer "{{ .ITEM }}"
+        cmd: ./thirdparty/Gradualizer/bin/gradualizer "{{ .ITEM }}"
   dialyze:
     deps: [setup_dialyzer]
     sources:
