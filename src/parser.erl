@@ -18,13 +18,53 @@
     | term
     | factor.
 
+-record(parse_error, {error :: string(), help :: string(), line :: integer()}).
+
 -spec construct(Type :: category(), Tokens :: [tuple()]) -> tuple().
+% while statement
+construct(statement, [{token, keyword, whilesym, Line} | Tokens]) ->
+    case find_symbol(symbol, [dosym], Tokens) of
+        {_, undefined, _} ->
+            #parse_error{
+                error = "do expected",
+                help = "while [condition] must be followed by do [statement]",
+                line = Line
+            };
+        {Condition, _, Statement} ->
+            {statement, {while, construct(condition, Condition), construct(statement, Statement)}}
+    end;
+% if statement
+construct(statement, [{token, keyword, ifsym, Line} | Tokens]) ->
+    case find_symbol(symbol, [thensym], Tokens) of
+        % If we can't find a then statement, error.
+        {_, undefined, _} ->
+            #parse_error{
+                error = "then expected",
+                help = "if [condition] must be followed by then [statement]",
+                line = Line
+            };
+        {Condition, _, Expression} ->
+            case find_symbol(symbol, [elsesym], Expression) of
+                % If we can't find a else statement, construct a tree without an else node
+                {_, undefined, _} ->
+                    {statement,
+                        {iif, construct(condition, Condition), construct(statement, Expression)}};
+                % And if we do find the keyword, construct one.
+                {IfStatement, _, ElseStatement} ->
+                    {statement,
+                        {iif, construct(condition, Condition), construct(statement, IfStatement),
+                            construct(statement, ElseStatement)}}
+            end
+    end;
+% become statement
 construct(statement, [{token, ident, Val, _}, {token, separator, becomesym, _} | Tokens]) ->
     {statement, {Val, become, construct(expression, Tokens)}};
+% call or read statement
 construct(statement, [{token, keyword, Sym, _}, {token, ident, Val, _}]) when
     (Sym == callsym) or (Sym == insym)
 ->
     {statement, {symbol_to_op(Sym), Val}};
+% write statement
 construct(statement, [{token, keyword, outsym, _} | Tokens]) ->
     {statement, {out, construct(expression, Tokens)}};
 construct(condition, [{token, keyword, oddsym, _} | Tokens]) ->

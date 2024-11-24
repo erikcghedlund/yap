@@ -1,5 +1,4 @@
 -module(parser_tests).
--ifdef(DEBUG).
 -include_lib("eunit/include/eunit.hrl").
 
 construct_factor1_test() ->
@@ -336,4 +335,43 @@ construct_statement_out8_test() ->
                         {expression, {term, {factor, ident, "bar"}}}}}}},
         parser:construct(statement, lexer:parse("write 1 + 2 + bar"))
     ).
--endif.
+construct_statement_while1_test() ->
+    ?assertEqual(
+        {statement,
+            {while,
+                {condition, {
+                    {expression, {term, {factor, number, 1}}},
+                    equalsym,
+                    {expression, {term, {factor, number, 1}}}
+                }},
+                {statement, {out, {expression, {term, {factor, number, 2}}}}}}},
+
+        parser:construct(statement, lexer:parse("while 1 = 1 do out 2"))
+    ).
+construct_statement_if1_test() ->
+    ?assertEqual(
+        {statement,
+            {iif,
+                {condition, {
+                    {expression, {term, {factor, number, 1}}},
+                    equalsym,
+                    {expression, {term, {factor, number, 1}}}
+                }},
+                {statement, {out, {expression, {term, {factor, number, 2}}}}}}},
+
+        parser:construct(statement, lexer:parse("if 1 = 1 then out 2"))
+    ).
+construct_statement_if2_test() ->
+    ?assertEqual(
+        {statement,
+            {iif,
+                {condition, {
+                    {expression, {term, {factor, number, 1}}},
+                    equalsym,
+                    {expression, {term, {factor, number, 1}}}
+                }},
+                {statement, {out, {expression, {term, {factor, number, 2}}}}},
+                {statement, {out, {expression, {term, {factor, number, 3}}}}}}},
+
+        parser:construct(statement, lexer:parse("if 1 = 1 then out 2 else out 3"))
+    ).
