@@ -23,6 +23,10 @@
 -spec construct(Type :: category(), Tokens :: [tuple()]) -> tuple() | #parse_error{}.
 construct(block, _) ->
     #parse_error{error = "Not implemented", help = "N/A", line = 0};
+construct(vardec, [
+    {token, keyword, intsym, _} | Tokens
+]) ->
+    {vardec, construct_vardec_help(Tokens)};
 construct(procdec, [
     {token, keyword, procsym, _}, {token, ident, _, _}, {token, separator, semicolonsym, Line}
 ]) ->
@@ -170,6 +174,14 @@ find_symbol(type, Types, [{token, Type, TSym, Line} | Tokens], Passed) ->
         Is_member -> {lists:reverse(Passed), TSym, Tokens};
         true -> find_symbol(type, Types, Tokens, [{token, Type, TSym, Line} | Passed])
     end.
+
+-spec construct_vardec_help(Tokens :: [tuple()]) -> [string()].
+construct_vardec_help([{token, ident, Ident, _}, {token, separator, semicolonsym, _}]) ->
+    [Ident];
+construct_vardec_help([
+    {token, ident, Ident, _}, {token, separator, commasym, _} | Tokens
+]) ->
+    [Ident | construct_vardec_help(Tokens)].
 
 -spec symbol_to_op(Symbol :: atom()) -> atom().
 symbol_to_op(multsym) -> mul;

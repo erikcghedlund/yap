@@ -397,3 +397,20 @@ construct_statement_begin1_test() ->
             statement, lexer:parse("begin while 1 = 1 do out 2; four := 2 + two; call bar end")
         )
     ).
+construct_vardec1_test() ->
+    ?assertEqual(
+        {vardec, ["x"]},
+        parser:construct(vardec, lexer:parse("int x;"))
+    ).
+construct_vardec2_test() ->
+    ?assertEqual(
+        {vardec, ["x", "y"]},
+        parser:construct(vardec, lexer:parse("int x, y;"))
+    ).
+construct_vardec3_test() ->
+    ?assertEqual(
+        {vardec, ["x", "y", "z", "q", "really0fucking0long0ident"]},
+        parser:construct(
+            vardec, lexer:parse("int x, y, z, q,               really0fucking0long0ident;")
+        )
+    ).
