@@ -21,6 +21,51 @@
 -record(parse_error, {error :: string(), help :: string(), line :: integer()}).
 
 -spec construct(Type :: category(), Tokens :: [tuple()]) -> tuple() | #parse_error{}.
+construct(block, _) ->
+    #parse_error{error = "Not implemented", help = "N/A", line = 0};
+construct(procdec, [
+    {token, keyword, procsym, _}, {token, ident, _, _}, {token, separator, semicolonsym, Line}
+]) ->
+    #parse_error{
+        error = "Illegal procedure declaration",
+        help = "A block must follow a declaration",
+        line = Line
+    };
+% This current implementation doesn't support nested procedures
+construct(procdec, [
+    {token, keyword, procsym, _},
+    {token, ident, Ident, _},
+    {token, separator, semicolonsym, _}
+    | Tokens
+]) ->
+    case find_symbol(symbol, [procsym], Tokens) of
+        {Before, undefined, _} ->
+            case lists:last(Before) of
+                {token, separator, semicolonsym, _} ->
+                    {procdec, [{Ident, construct(block, lists:droplast(Before))}]};
+                {_, _, _, Line} ->
+                    #parse_error{
+                        error = "semicolon expected",
+                        help = "procedure must end with semicolon",
+                        line = Line
+                    }
+            end;
+        {Before, procsym, After} ->
+            case lists:last(Before) of
+                {token, separator, semicolonsym, Line} ->
+                    {_, Tail} = construct(procdec, [{token, keyword, procsym, Line} | After]),
+                    {procdec, [
+                        {Ident, construct(block, lists:droplast(Before))}
+                        | Tail
+                    ]};
+                {_, _, _, Line} ->
+                    #parse_error{
+                        error = "semicolon expected",
+                        help = "procedure must end with semicolon",
+                        line = Line
+                    }
+            end
+    end;
 construct(statement, [{token, keyword, beginsym, Line} | Tokens]) ->
     case find_symbol(symbol, [endsym], Tokens) of
         {_, undefined, _} ->
