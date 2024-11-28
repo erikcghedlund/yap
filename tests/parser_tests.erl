@@ -414,3 +414,13 @@ construct_vardec3_test() ->
             vardec, lexer:parse("int x, y, z, q,               really0fucking0long0ident;")
         )
     ).
+construct_constdec1_test() ->
+    ?assertEqual(
+        {constdec, [{"x", 1}]},
+        parser:construct(constdec, lexer:parse("const x = 1;"))
+    ).
+construct_constdec2_test() ->
+    ?assertEqual(
+        {constdec, [{"x", 1}, {"y", 3}]},
+        parser:construct(constdec, lexer:parse("const x = 1, y = 3;"))
+    ).

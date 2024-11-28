@@ -23,6 +23,10 @@
 -spec construct(Type :: category(), Tokens :: [tuple()]) -> tuple() | #parse_error{}.
 construct(block, _) ->
     #parse_error{error = "Not implemented", help = "N/A", line = 0};
+construct(constdec, [
+    {token, keyword, constsym, _} | Tokens
+]) ->
+    {constdec, construct_constdec_help(Tokens)};
 construct(vardec, [
     {token, keyword, intsym, _} | Tokens
 ]) ->
@@ -182,6 +186,23 @@ construct_vardec_help([
     {token, ident, Ident, _}, {token, separator, commasym, _} | Tokens
 ]) ->
     [Ident | construct_vardec_help(Tokens)].
+
+-spec construct_constdec_help(Tokens :: [tuple()]) -> [tuple()].
+construct_constdec_help([
+    {token, ident, Ident, _},
+    {token, relop, equalsym, _},
+    {token, number, Val, _},
+    {token, separator, semicolonsym, _}
+]) ->
+    [{Ident, Val}];
+construct_constdec_help([
+    {token, ident, Ident, _},
+    {token, relop, equalsym, _},
+    {token, number, Val, _},
+    {token, separator, commasym, _}
+    | Tokens
+]) ->
+    [{Ident, Val} | construct_constdec_help(Tokens)].
 
 -spec symbol_to_op(Symbol :: atom()) -> atom().
 symbol_to_op(multsym) -> mul;
