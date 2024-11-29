@@ -3,7 +3,7 @@
 -include_lib("eunit/include/eunit.hrl").
 -compile(export_all).
 -else.
--export([construct/2]).
+-export([construct/1]).
 -endif.
 
 -type category() ::
@@ -20,7 +20,14 @@
 
 -record(parse_error, {error :: string(), help :: string(), line :: integer()}).
 
+-spec construct(Tokens :: [tuple()]) -> tuple().
+construct(Tokens) -> construct(program, Tokens).
 -spec construct(Type :: category(), Tokens :: [tuple()]) -> tuple() | #parse_error{}.
+construct(program, Tokens) ->
+    case lists:last(Tokens) of
+        {token, separator, periodsym, Line} -> #parse_error{error = "period expected", help = "Missed a period at the end of the program.", line = Line};
+        _ -> {program, construct(block, lists:droplast(Tokens))}
+    end;
 construct(block, Tokens) ->
     {_, MaybeConst, _} = find_symbol(symbol, [constsym], Tokens),
     {_, MaybeVars, _} = find_symbol(symbol, [intsym], Tokens),
