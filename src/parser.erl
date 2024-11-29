@@ -229,6 +229,14 @@ construct_block_help([undefined, intsym, undefined], Tokens) ->
         {procdec, []},
         construct(statement, Statement)
     };
+construct_block_help([undefined, undefined, procsym], Tokens) ->
+    {Procedure, Statement} = partition_procedure_statement(Tokens),
+    {
+        {constdec, []},
+        {vardec, []},
+        construct(procdec, Procedure),
+        construct(statement, Statement)
+    };
 construct_block_help([constsym, intsym, undefined], Tokens) ->
     {Const, [Semicolon1 | After]} = lists:splitwith(
         fun({_, _, Sym, _}) -> Sym /= semicolonsym end, Tokens
@@ -240,6 +248,42 @@ construct_block_help([constsym, intsym, undefined], Tokens) ->
         construct(constdec, Const ++ [Semicolon1]),
         construct(vardec, Vars ++ [Semicolon2]),
         {procdec, []},
+        construct(statement, Statement)
+    };
+construct_block_help([constsym, undefined, procsym], Tokens) ->
+    {Const, [Semicolon | After]} = lists:splitwith(
+        fun({_, _, Sym, _}) -> Sym /= semicolonsym end, Tokens
+    ),
+    {Procedure, Statement} = partition_procedure_statement(After),
+    {
+        construct(constdec, Const ++ [Semicolon]),
+        {vardec, []},
+        construct(procdec, Procedure),
+        construct(statement, Statement)
+    };
+construct_block_help([undefined, intsym, procsym], Tokens) ->
+    {Vars, [Semicolon | After]} = lists:splitwith(
+        fun({_, _, Sym, _}) -> Sym /= semicolonsym end, Tokens
+    ),
+    {Procedure, Statement} = partition_procedure_statement(After),
+    {
+        {constdec, []},
+        construct(vardec, Vars ++ [Semicolon]),
+        construct(procdec, Procedure),
+        construct(statement, Statement)
+    };
+construct_block_help([constsym, intsym, procsym], Tokens) ->
+    {Const, [Semicolon1 | After]} = lists:splitwith(
+        fun({_, _, Sym, _}) -> Sym /= semicolonsym end, Tokens
+    ),
+    {Vars, [Semicolon2 | After2]} = lists:splitwith(
+        fun({_, _, Sym, _}) -> Sym /= semicolonsym end, After
+    ),
+    {Procedure, Statement} = partition_procedure_statement(After2),
+    {
+        construct(constdec, Const ++ [Semicolon1]),
+        construct(vardec, Vars ++ [Semicolon2]),
+        construct(procdec, Procedure),
         construct(statement, Statement)
     }.
 
@@ -260,3 +304,17 @@ split_statements([{token, separator, semicolonsym, _} | Tokens], Accum) ->
     split_statements(Tokens, [[] | Accum]);
 split_statements([Head | Tokens], [Haccum | Accum]) ->
     split_statements(Tokens, [[Head | Haccum] | Accum]).
+
+-spec partition_procedure_statement(Tokens :: [tuple()]) -> tuple().
+partition_procedure_statement(Tokens) ->
+    partition_procedure_statement(0, lists:reverse(Tokens), []).
+-spec partition_procedure_statement(Depth :: integer(), Tokens :: [tuple()], Accum :: [tuple()]) ->
+    tuple().
+partition_procedure_statement(Depth, [{token, keyword, beginsym, Line} | Tokens], Accum) ->
+    partition_procedure_statement(Depth - 1, Tokens, [{token, keyword, beginsym, Line} | Accum]);
+partition_procedure_statement(Depth, [{token, keyword, endsym, Line} | Tokens], Accum) ->
+    partition_procedure_statement(Depth + 1, Tokens, [{token, keyword, beginsym, Line} | Accum]);
+partition_procedure_statement(0, [{token, separator, semicolonsym, Line} | Tokens], Accum) ->
+    {lists:reverse([{token, separator, semicolonsym, Line} | Tokens]), Accum};
+partition_procedure_statement(Depth, [H | Tokens], Accum) ->
+    partition_procedure_statement(Depth, Tokens, [H | Accum]).
