@@ -21,8 +21,11 @@
 -record(parse_error, {error :: string(), help :: string(), line :: integer()}).
 
 -spec construct(Type :: category(), Tokens :: [tuple()]) -> tuple() | #parse_error{}.
-construct(block, _) ->
-    #parse_error{error = "Not implemented", help = "N/A", line = 0};
+construct(block, Tokens) ->
+    {_, MaybeConst, _} = find_symbol(symbol, [constsym], Tokens),
+    {_, MaybeVars, _} = find_symbol(symbol, [intsym], Tokens),
+    {_, MaybeProcs, _} = find_symbol(symbol, [intsym], Tokens),
+    construct_block_help([MaybeConst, MaybeVars, MaybeProcs], Tokens);
 construct(constdec, [
     {token, keyword, constsym, _} | Tokens
 ]) ->
@@ -39,7 +42,7 @@ construct(procdec, [
         help = "A block must follow a declaration",
         line = Line
     };
-% This current implementation doesn't support nested procedures
+% TODO: This current implementation doesn't support nested procedures
 construct(procdec, [
     {token, keyword, procsym, _},
     {token, ident, Ident, _},
@@ -203,6 +206,42 @@ construct_constdec_help([
     | Tokens
 ]) ->
     [{Ident, Val} | construct_constdec_help(Tokens)].
+
+construct_block_help([undefined, undefined, undefined], Tokens) ->
+    {{constdec, []}, {vardec, []}, {procdec, []}, construct(statement, Tokens)};
+construct_block_help([constsym, undefined, undefined], Tokens) ->
+    {Const, [Semicolon | Statement]} = lists:splitwith(
+        fun({_, _, Sym, _}) -> Sym /= semicolonsym end, Tokens
+    ),
+    {
+        construct(constdec, Const ++ [Semicolon]),
+        {vardec, []},
+        {procdec, []},
+        construct(statement, Statement)
+    };
+construct_block_help([undefined, intsym, undefined], Tokens) ->
+    {Vars, [Semicolon | Statement]} = lists:splitwith(
+        fun({_, _, Sym, _}) -> Sym /= semicolonsym end, Tokens
+    ),
+    {
+        {constdec, []},
+        construct(vardec, Vars ++ [Semicolon]),
+        {procdec, []},
+        construct(statement, Statement)
+    };
+construct_block_help([constsym, intsym, undefined], Tokens) ->
+    {Const, [Semicolon1 | After]} = lists:splitwith(
+        fun({_, _, Sym, _}) -> Sym /= semicolonsym end, Tokens
+    ),
+    {Vars, [Semicolon2 | Statement]} = lists:splitwith(
+        fun({_, _, Sym, _}) -> Sym /= semicolonsym end, After
+    ),
+    {
+        construct(constdec, Const ++ [Semicolon1]),
+        construct(vardec, Vars ++ [Semicolon2]),
+        {procdec, []},
+        construct(statement, Statement)
+    }.
 
 -spec symbol_to_op(Symbol :: atom()) -> atom().
 symbol_to_op(multsym) -> mul;
