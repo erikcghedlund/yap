@@ -54,6 +54,13 @@ There is currently no good usage for running the program, but some individual co
 task run-lexer -- <file>
 ```
 
+### Limitations
+
+The parser currently does not support:
+
+- Parentheses
+- Nested procedures
+
 ### License
 
 This project is licensed under the [GPLv3 License](LICENSE).
