@@ -21,12 +21,23 @@
 -record(parse_error, {error :: string(), help :: string(), line :: integer()}).
 
 -spec construct(Tokens :: [tuple()]) -> tuple().
-construct(Tokens) -> construct(program, Tokens).
+construct(Tokens) ->
+    construct(program, Tokens).
 -spec construct(Type :: category(), Tokens :: [tuple()]) -> tuple() | #parse_error{}.
+construct(program, []) ->
+    {#parse_error{
+        error = "empty program ", help = "A empty string is not a valid program", line = 0
+    }};
 construct(program, Tokens) ->
-    case lists:last(Tokens) of
-        {token, separator, periodsym, Line} -> #parse_error{error = "period expected", help = "Missed a period at the end of the program.", line = Line};
-        _ -> {program, construct(block, lists:droplast(Tokens))}
+    case last(Tokens) of
+        {token, separator, periodsym, Line} ->
+            #parse_error{
+                error = "period expected",
+                help = "Missed a period at the end of the program.",
+                line = Line
+            };
+        _ ->
+            {program, construct(block, droplast(Tokens))}
     end;
 construct(block, Tokens) ->
     {_, MaybeConst, _} = find_symbol(symbol, [constsym], Tokens),
@@ -58,9 +69,9 @@ construct(procdec, [
 ]) ->
     case find_symbol(symbol, [procsym], Tokens) of
         {Before, undefined, _} ->
-            case lists:last(Before) of
+            case last(Before) of
                 {token, separator, semicolonsym, _} ->
-                    {procdec, [{Ident, construct(block, lists:droplast(Before))}]};
+                    {procdec, [{Ident, construct(block, droplast(Before))}]};
                 {_, _, _, Line} ->
                     #parse_error{
                         error = "semicolon expected",
@@ -69,11 +80,11 @@ construct(procdec, [
                     }
             end;
         {Before, procsym, After} ->
-            case lists:last(Before) of
+            case last(Before) of
                 {token, separator, semicolonsym, Line} ->
                     {_, Tail} = construct(procdec, [{token, keyword, procsym, Line} | After]),
                     {procdec, [
-                        {Ident, construct(block, lists:droplast(Before))}
+                        {Ident, construct(block, droplast(Before))}
                         | Tail
                     ]};
                 {_, _, _, Line} ->
@@ -301,6 +312,18 @@ symbol_to_op(plussym) -> plus;
 symbol_to_op(minussym) -> sub;
 symbol_to_op(callsym) -> call;
 symbol_to_op(insym) -> in.
+
+% These functions are to appease Gradualizer (dirty hack for now)
+last(L) ->
+    case L of
+        [] -> undefined;
+        _ -> lists:last(L)
+    end.
+droplast(L) ->
+    case L of
+        [] -> [];
+        _ -> lists:droplast(L)
+    end.
 
 -spec split_statements(Tokens :: [tuple()]) -> [[tuple()]].
 split_statements(Tokens) -> split_statements(Tokens, [[]]).
