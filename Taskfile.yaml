@@ -133,3 +133,32 @@ tasks:
     deps: [build]
     cmds:
       - erl -pa bin
+  download_escriptize:
+    deps: [thirdparty]
+    dir: thirdparty
+    status:
+      - '[ {{ .COMMIT }} == $(cat {{ .GENERATES }}/commit) ]'
+    vars:
+      COMMIT: 'd27715c993eb82fe0f28260560f76836a3e8f9e7'
+      SOURCE: 'https://github.com/rlipscombe/escriptize/archive/{{ .COMMIT }}.zip'
+      GENERATES: 'escriptize'
+    generates:
+      - '{{ .GENERATES }}'
+    cmds:
+      - curl -L "{{ .SOURCE }}" -o "{{ .GENERATES }}.zip"
+      - unzip "{{ .GENERATES }}"
+      - mv "{{ .GENERATES }}-{{ .COMMIT }}" "{{ .GENERATES }}"
+      - echo "{{ .COMMIT }}" > "{{ .GENERATES }}/commit"
+      - rm "{{ .GENERATES }}.zip"
+  build_escriptize:
+    dir: 'thirdparty/escriptize'
+    deps: [download_gradualizer]
+    vars:
+      GENERATES: './escriptize'
+      SOURCE: './src'
+    generates:
+      - '{{ .GENERATES }}'
+    sources:
+      - '{{ .SOURCE }}'
+    cmds:
+      - make escriptize
