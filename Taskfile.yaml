@@ -34,8 +34,7 @@ tasks:
     silent: true
     cmds:
       - for: ['lexer', 'parser']
-        cmd: echo "Testing {{ .ITEM }} module..."; erl -pa bin -eval '{{ .ITEM }}:test(),
-          halt().' -noshell
+        cmd: echo "Testing {{ .ITEM }} module..."; erl -pa bin -noshell -s {{ .ITEM }} test -s erlang halt
   run-*:
     deps: [build-debug]
     vars:
